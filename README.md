@@ -16,6 +16,8 @@ http://blog.ivank.net/fastest-gaussian-blur.html
 
 ## Results :
 Original Image
-[[https://github.com/Lescurel/gaussian_blur/master/example.png|alt=iceberg]]
+![iceberg](https://raw.githubusercontent.com/Lescurel/gaussian_blur/master/img/example.png)
 Blurred Image :
-[[https://github.com/Lescurel/gaussian_blur/master/exampleblur.png|alt=iceberg]]
+![blurred_iceberg](https://raw.githubusercontent.com/Lescurel/gaussian_blur/master/img/exampleblur.png)
+
+Execution time : 0,093762 seconds.
