@@ -1,3 +1,13 @@
+/*
+ * This part of the program is heavily based on the work seen here :
+ * http://zarb.org/~gc/html/libpng.html
+ *
+ * Copyright 2002-2010 Guillaume Cottenceau.
+ *
+ * This software may be freely redistributed under the terms
+ * of the X11 license.
+ */
+
 #include "readpng.h"
 
 void read_file(char* file_name){

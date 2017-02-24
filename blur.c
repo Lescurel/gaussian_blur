@@ -1,3 +1,9 @@
+/*
+ * Thanks to this helpful site :
+ * http://blog.ivank.net/fastest-gaussian-blur.html
+ *
+ */
+
 #include "readpng.h"
 #include "blur.h"
 
