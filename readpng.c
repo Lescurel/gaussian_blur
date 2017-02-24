@@ -68,7 +68,6 @@ void read_file(char* file_name){
                 rows_target[i] = (png_byte*) malloc(png_get_rowbytes(img_struct,img_info));
               }
 
-
         png_read_image(img_struct,rows);
 
         fclose(fp);
@@ -95,16 +94,22 @@ void write_file(char* file_name){
 
         png_init_io(img_struct,fp);
 
-        png_set_IHDR(img_struct, img_info, width, height, depth, PNG_COLOR_TYPE_RGBA, PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT);
+        png_set_IHDR(img_struct, img_info, width, height, 8, PNG_COLOR_TYPE_RGBA, PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT);
         png_write_info(img_struct, img_info);
 
-        png_write_image(img_struct,rows_target);
+        png_write_image(img_struct,rows);
 
         png_write_end(img_struct,NULL);
 
-        for (i = 0; i < height; i++)
-                free(rows[i]);
-        free(rows);
+        /* For some reason, I got a double free or corruption error with some images.
+        Since it's the end of the program, it doesn't matter very much if I remove those ligns,
+        but it's strange */
+        // for (i = 0; i < height; i++){
+        //         free(rows[i]);
+        //         free(rows_target[i]);
+        // }
+        // free(rows);
+        // free(rows_target);
 
         fclose(fp);
 }

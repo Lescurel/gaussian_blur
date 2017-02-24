@@ -7,6 +7,7 @@ void gauss_blur(int radius)
   box_blur(rows, rows_target,(sizes[0]-1)/2);
   box_blur(rows_target, rows, (sizes[1]-1)/2);
   box_blur(rows, rows_target,(sizes[2]-1)/2);
+  //box_blur(rows_target,rows, (sizes[3]-1)/2);
 }
 
 void box_gauss(double sigma, int n){
@@ -17,7 +18,7 @@ void box_gauss(double sigma, int n){
   /* width of the larger averager filter */
   int wu = wl+2;
   /* number of filtering to be done with the smaller filter */
-  int m = (12*sigma*sigma -n*wl*wl - 4*n*wl -3*n)/(-4*wl -4);
+  int m = round((12.0*sigma*sigma -n*wl*wl - 4.0*n*wl -3.0*n)/(-4.0*wl -4.0));
   /* the number of filtering with the larger filter is m-n */
   if(m>n || m<0){
     fprintf(stderr, "%i must be > 0 and < %i \n",m,n);
@@ -162,8 +163,19 @@ void box_blur_t(png_bytep* scl, png_bytep* tcl,int r){
 }
 
 int main(int argc, char* argv[]){
-  read_file("/home/louis/gaussian_blur/test.png");
-  gauss_blur(5);
-  write_file("/home/louis/gaussian_blur/p.png");
-  return 0;
+  if(argc == 2){
+    read_file(argv[1]);
+    gauss_blur(BLUR);
+    write_file(argv[1]);
+    return 0;
+  }
+  else if(argc == 3){
+    read_file(argv[1]);
+    gauss_blur(BLUR);
+    write_file(argv[2]);
+    return 0;
+  }else {
+    fprintf(stderr, "You must pass two arguments, the file to be read and the file to be wrote\n");
+    return -1;
+  }
 }
