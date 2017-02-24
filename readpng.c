@@ -1,6 +1,6 @@
 #include "readpng.h"
 
-void read_file(char * file_name){
+void read_file(char* file_name){
 
         /* To check if its a png file */
         char header[8];
@@ -33,15 +33,40 @@ void read_file(char * file_name){
         /* retrieving essentials informations */
         width = png_get_image_width(img_struct, img_info);
         height = png_get_image_height(img_struct, img_info);
-        color = png_get_image_color_type(img_struct,img_info);
-        depth = png_get_image_bit_depth(img_struct,img_info);
+        color = png_get_color_type(img_struct,img_info);
+        depth = png_get_bit_depth(img_struct,img_info);
 
-        num_interlaced = png_set_interlace_handling(img_struct);
+        if(depth == 16)
+                png_set_strip_16(img_struct);
+
+        if(color == PNG_COLOR_TYPE_PALETTE)
+                png_set_palette_to_rgb(img_struct);
+
+        /* PNG_COLOR_TYPE_GRAY_ALPHA is always 8 or 16bit depth. */
+        if(color == PNG_COLOR_TYPE_GRAY && depth < 8)
+                png_set_expand_gray_1_2_4_to_8(img_struct);
+
+        if(png_get_valid(img_struct, img_info, PNG_INFO_tRNS))
+                png_set_tRNS_to_alpha(img_struct);
+
+        /* These color type don't have an alpha channel then fill it with 0xff. */
+        if(color == PNG_COLOR_TYPE_RGB ||
+           color == PNG_COLOR_TYPE_GRAY ||
+           color == PNG_COLOR_TYPE_PALETTE)
+                png_set_filler(img_struct, 0xFF, PNG_FILLER_AFTER);
+
+        if(color == PNG_COLOR_TYPE_GRAY ||
+           color == PNG_COLOR_TYPE_GRAY_ALPHA)
+                png_set_gray_to_rgb(img_struct);
+
         png_read_update_info(img_struct, img_info);
 
-        row = (png_bytep*) malloc(sizeof(png_bytep) * height);
-        for (i = 0; i < height; i++)
-          row[i] = (png_bytep*) malloc(png_get_rowbytes(img_struct,img_info));
+        rows = (png_bytep*) malloc(sizeof(png_bytep) * height);
+        rows_target = (png_bytep*) malloc(sizeof(png_bytep) * height);
+        for (i = 0; i < height; i++){
+                rows[i] = (png_byte*) malloc(png_get_rowbytes(img_struct,img_info));
+                rows_target[i] = (png_byte*) malloc(png_get_rowbytes(img_struct,img_info));
+              }
 
 
         png_read_image(img_struct,rows);
@@ -49,41 +74,37 @@ void read_file(char * file_name){
         fclose(fp);
 }
 
-void write_file(char * file_name){
-  FILE *fp = fopen(file_name,"wb");
-  if(!fp){
-    fprintf(stderr, "Couldn't write %s file\n",file_name);
-    exit(EXIT_FAILURE);
-  }
+void write_file(char* file_name){
+        FILE* fp = fopen(file_name,"wb");
+        if(!fp) {
+                fprintf(stderr, "Couldn't write %s file\n",file_name);
+                exit(EXIT_FAILURE);
+        }
 
-  img_struct = png_create_write_struct(PNG_LIBPNG_VER_STRING,NULL,NULL,NULL);
-  if(!img_struct) {
-          fprintf(stderr, "Couldn't create a png structure\n");
-          exit(EXIT_FAILURE);
-  }
+        img_struct = png_create_write_struct(PNG_LIBPNG_VER_STRING,NULL,NULL,NULL);
+        if(!img_struct) {
+                fprintf(stderr, "Couldn't create a png structure\n");
+                exit(EXIT_FAILURE);
+        }
 
-  img_info = png_create_info_struct(img_struct);
-  if(!img_info) {
-          fprintf(stderr, "Couldn't create a png info \n");
-          exit(EXIT_FAILURE);
-  }
+        img_info = png_create_info_struct(img_struct);
+        if(!img_info) {
+                fprintf(stderr, "Couldn't create a png info \n");
+                exit(EXIT_FAILURE);
+        }
 
-  png_init_io(img_struct,fp);
+        png_init_io(img_struct,fp);
 
-  png_set_IHDR(img_struct, img_info, width, height, depth, color, PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
-  png_write_info(img_struct, img_info);
+        png_set_IHDR(img_struct, img_info, width, height, depth, PNG_COLOR_TYPE_RGBA, PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT);
+        png_write_info(img_struct, img_info);
 
-  png_write_image(img_info,rows);
+        png_write_image(img_struct,rows_target);
 
-  png_write_end(img_info,NULL);
+        png_write_end(img_struct,NULL);
 
-  for (i = 0; i < height; i++)
-    free(rows[i]);
-  free(rows);
+        for (i = 0; i < height; i++)
+                free(rows[i]);
+        free(rows);
 
-  fclose(fp);
-}
-
-int main(){
-        return 0;
+        fclose(fp);
 }
